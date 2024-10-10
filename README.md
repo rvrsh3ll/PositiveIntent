@@ -1,5 +1,6 @@
 # PositiveIntent
-
+> [!WARNING]  
+> Beta release. Please create an issue with as much detail as possible if you run into any bugs.
 ## Features
 
 ## Usage
