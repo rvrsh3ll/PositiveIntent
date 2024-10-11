@@ -59,4 +59,5 @@ python build.py --file "..\Rubeus.exe" --hostname JOE-WIN10-VM --domain www.zoom
 - Add obfuscation of namespace names `obfuscate.py`
 - Programatically generate and randomize `assemblyinfo.cs`
 - Port all Python pre/post-build scripts to .NET & cross-compile for Linux
+- Improve error handling
 - ???
