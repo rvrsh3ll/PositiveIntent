@@ -62,11 +62,10 @@ python build.py --file /tmp/Internal-Monologue.exe --hostname PFC-SYSCTR --domai
 ## Roadmap
 
 - Add option to key on username
-- Add option to adjust execution delay
+- ~~Add option to adjust execution delay~~ 
 - Add obfuscation of class names to `obfuscate.py`
 - Add obfuscation of namespace names `obfuscate.py`
 - Programatically generate and randomize `assemblyinfo.cs`
-- Add some sort of DNS blackhole sandbox check
 - Port all Python pre/post-build scripts to .NET & cross-compile for Linux
 - Improve error handling
 - ???
