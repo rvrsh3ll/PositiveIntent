@@ -38,6 +38,10 @@ def update_hostname(content, hostname):
     content = re.sub(r'TESTVM', hostname, content)
     return content
 
+def update_delay(content, delay):
+    content = re.sub(r'13371337', str(delay * 1000), content)
+    return content
+
 # Function to obfuscate method names and their references
 def obfuscate_methods(content, obfuscation_map):
     method_pattern = re.compile(r'(public|private|protected|internal)\s(static|delegate)\s(.*NTSTATUS|void|int|double|IntPtr|string|bool|uint|T)\s(\w*)')
@@ -80,10 +84,10 @@ def process_file(file_path, obfuscation_map, string_map):
     obfuscate_variables(content, obfuscation_map)
     obfuscate_strings(content, obfuscation_map, string_map)
 
-def run(hostname):
+def run(hostname, delay):
     # Input and output directories
-    input_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\"))
-    output_dir =  os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "..\\temp"))
+    input_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
+    output_dir =  os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../temp"))
 
     # Copy unobfuscated source to preserve it
     if(os.path.exists(output_dir)):
@@ -115,6 +119,7 @@ def run(hostname):
                     content = update_references(content, obfuscation_map)
                     content = update_strings(content, string_map)
                     content = update_hostname(content, hostname)
+                    content = update_delay(content, delay)
                     file.seek(0)
                     file.write(content)
                     file.truncate()
