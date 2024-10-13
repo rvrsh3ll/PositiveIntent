@@ -20,7 +20,7 @@
   - Python post-build script signs the loader with a self-signed certificate using values cloned from a domain of your choice
   - No P/Invoke - full implementation of D/Invoke with API hashing
 - Compatibility
-  - Built with .NET Framework 4.8 and C# 7.3 to ensure maximum compatibility with various Windows versions
+  - Built with older .NET Framework 4.8 and C# 7.3 to ensure maximum compatibility with various Windows versions
 
 ## Installation
 
