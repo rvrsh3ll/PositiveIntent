@@ -90,7 +90,8 @@ def build():
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Embedded {embed_count} books as resource files')
     if(entropy.run(assembly_output_path) >= 5.50 or entropy.run(assembly_output_path) <= 4.50):
         print(colorama.Fore.RED + "[-] " + colorama.Style.RESET_ALL + f'Failed to normalize entropy. Need more books! Entropy of loader: {entropy.run(assembly_output_path)}. You can still run the loader at your own risk.')
-    print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Entropy of loader: {entropy.run(assembly_output_path)}')
+    else:
+        print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Entropy of loader: {entropy.run(assembly_output_path)}')
 
     return assembly_name
 
@@ -130,6 +131,7 @@ if __name__=="__main__":
 
     # build loader and adjust entropy
     try:
+        print(colorama.Fore.YELLOW + "[*] " + colorama.Style.RESET_ALL + f'Building loader and adjusting entropy...please hold.')
         assembly_name = build()
     except Exception as exception:
         print(colorama.Fore.RED + "[-] " + colorama.Style.RESET_ALL + f'Failed to build loader.')
