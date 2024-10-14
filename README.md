@@ -55,7 +55,7 @@ python build.py --file /tmp/Rubeus.exe --hostname PFC-SYSCTR --domain www.zoom.c
 | SentinelOne | Internal Monologue | Undetected (10/11/2024) |
 | CrowdStrike | Rubeus | Undetected (10/11/2024) |
 | CrowdStrike | Seeker | Undetected (10/11/2024) |
-| CrowdStrike | Internal Monologue | Detected (Behavioral) |
+| CrowdStrike | Internal Monologue | Detected |
 | Windows Defender | Rubeus | Undetected (10/10/2024) |
 | Windows Defender | Seatbelt | Undetected (10/10/2024) |
 
