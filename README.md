@@ -68,3 +68,6 @@ python build.py --file /tmp/Rubeus.exe --hostname TEST --domain www.zoom.com --d
 - Port all Python pre/post-build scripts to .NET & cross-compile for Linux
 - Improve error handling
 - ???
+
+## References
+[Anatomy of a .NET Assembly – The DOS Stub](https://www.red-gate.com/simple-talk/blogs/anatomy-of-a-net-assembly-the-dos-stub/)
