@@ -10,6 +10,12 @@ on:
         options:
           - Rubeus
           - Seeker
+      input1:
+        description: "Hostname to key on"
+        required: true
+      input2:
+        description: "Domain to clone certificate from"
+        required: true
 
 jobs:
   build:
