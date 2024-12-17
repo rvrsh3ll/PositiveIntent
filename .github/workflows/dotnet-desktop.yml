@@ -1,0 +1,12 @@
+name: Dropdown Example
+
+on:
+  workflow_dispatch:
+    inputs:
+      choice:
+        description: "Select tool"
+        required: true
+        type: choice
+        options:
+          - Rubeus
+          - Seeker
