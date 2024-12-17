@@ -26,3 +26,12 @@ jobs:
     - name: Checkout Code
       uses: actions/checkout@v2
 
+    - name: Build PositiveIntent
+      run: |
+        dotnet build --configuration Release ${{ github.workspace }}\PositiveIntent.sln
+
+    - name: Upload Loader Artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: Loader
+        path: PositiveIntent\bin\Release\
