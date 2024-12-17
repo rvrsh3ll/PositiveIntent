@@ -36,7 +36,7 @@ jobs:
 
     - name: Build PositiveIntent
       run: |
-        python build.py --file ${{ github.event.inputs.choice }} --hostname ${{ github.event.inputs.input1 }} --domain ${{ github.event.inputs.input2 }} --delay 10
+        python build.py --file ${{ github.event.inputs.choice }}.exe --hostname ${{ github.event.inputs.input1 }} --domain ${{ github.event.inputs.input2 }} --delay 10
 
     - name: Upload Loader Artifact
       uses: actions/upload-artifact@v3
