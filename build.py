@@ -51,7 +51,7 @@ def build(assembly_name):
     else:
         subprocess.run(["msbuild", solution_path, "-r:true", "-p:Configuration=Release"], check=True, stdout = subprocess.DEVNULL)
 
-    if(entropy.run(assembly_output_path) >= 5.50):
+    if(entropy.run(assembly_output_path) > 5.50):
         for root, dirs, files in os.walk(resources_directory_path, topdown=True):
             for file_name in files:
                 if file_name.endswith('.txt'):
@@ -70,7 +70,7 @@ def build(assembly_name):
 
     if(embed_count > 0):
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Embedded {embed_count} books as resource files')
-    if(entropy.run(assembly_output_path) >= 5.50 or entropy.run(assembly_output_path) <= 4.50):
+    if(entropy.run(assembly_output_path) > 5.50 or entropy.run(assembly_output_path) < 4.50):
         print(colorama.Fore.RED + "[-] " + colorama.Style.RESET_ALL + f'Failed to normalize entropy. Need more books! Entropy of loader: {entropy.run(assembly_output_path)}. You can still run the loader at your own risk.')
     else:
         print(colorama.Fore.GREEN + "[+] " + colorama.Style.RESET_ALL + f'Entropy of loader: {entropy.run(assembly_output_path)}')
