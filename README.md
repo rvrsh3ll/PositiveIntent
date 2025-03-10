@@ -25,8 +25,8 @@
 ## Installation
 
 ```
-pip install -r requirements.txt
-sudo bash install.sh
+cd PositiveIntent
+docker build -t positiveintent .
 ```
 
 ## Usage
