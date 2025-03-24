@@ -5,8 +5,8 @@
 
 -  ETW disabled via process fork with environment variable `COMPlus_ETWEnabled` set to zero. No memory patching.
 -  Unique AMSI patch that targets a writable pointer to `AmsiScanBuffer` in the .data section of `clr.dll`. This means that `amsi.dll` is never touched and no memory page permissions are changed anywhere.
--  Hostname keying.
--  PE headers of your assembly (after it's been decrypted and loaded) are stomped to hide it from memory page scanners looking for implanted PE signatures. 
+-  PE headers of your assembly (after it's been decrypted and loaded) are stomped to hide it from memory page scanners looking for implanted PE signatures.
+-  Hostname keying. 
 -  Python pre-build script obfuscates all (most) methods, variables, strings, delegates, classes, and namespaces before building the loader (the code is disgusting don't read it please).
 -  Your .NET assembly of choice (Rubeus, Seeker, etc.) is embedded in the loader as a resource file and RC4 encrypted.
 -  No suspicious usage of crypto libraries - RC4 encryption/decryption is performed using a "raw" implementation of the RC4 algorithm (thanks ChatGPT).
