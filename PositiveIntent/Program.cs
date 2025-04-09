@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 using System.Management;
 
 namespace PositiveIntent
@@ -24,6 +25,7 @@ namespace PositiveIntent
                 return false;
             }
         }
+
         private static void CheckHostname()
         {
             if (System.Environment.MachineName != "TESTVM")
@@ -31,6 +33,7 @@ namespace PositiveIntent
                 Environment.Exit(-1);
             }
         }
+
         private static void Fork(string args)
         {
             Process p = new Process();
@@ -45,17 +48,27 @@ namespace PositiveIntent
             Console.WriteLine(p.StandardError.ReadToEnd());
             p.WaitForExit();
         }
+
         public static void Main(string[] args)
         {
-            if (GetParentProcess())
+            try
             {
-                AMSI.Patch();
-                AssemblyHelper.LoadAssembly(args);
+                if (GetParentProcess())
+                {
+                    AMSI.Patch();
+                    AssemblyHelper.LoadAssembly(args);
+                }
+                else if (args.Length != 0)
+                {
+                    CheckHostname();
+                    Fork(string.Join(" ", args));
+                }
             }
-            else if (args.Length != 0)
+            // Need to improve exception handling both globally and locally - handle some exceptions locally if recoverable
+            catch (Exception ex)
             {
-                CheckHostname();
-                Fork(string.Join(" ", args));
+                Console.WriteLine("\nSomething has gone terribly wrong. Please send the details below to Joe.\n");
+                Console.WriteLine(ex.ToString());
             }
         }
     }
