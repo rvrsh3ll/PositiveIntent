@@ -7,6 +7,8 @@
 -  Unique AMSI patch that targets a writable pointer to `AmsiScanBuffer` in the .data section of `clr.dll`. This means that `amsi.dll` is never touched and no memory page permissions are changed anywhere.
 -  PE headers of your assembly (after it's been decrypted and loaded) are stomped to hide it from memory page scanners looking for implanted PE signatures.
 -  Hostname keying. 
+-  Optional flag to redirect output to an encrypted file. Useful to avoid outputting signatured text to console (e.g. tool logos).
+-  Optional flag to hardcode arguments to be passed to your assembly. Useful to avoid passing signatured arguments on the command line.
 -  Python pre-build script obfuscates all (most) methods, variables, strings, delegates, classes, and namespaces before building the loader (the code is disgusting don't read it please).
 -  Your .NET assembly of choice (Rubeus, Seeker, etc.) is embedded in the loader as a resource file and RC4 encrypted.
 -  No suspicious usage of crypto libraries - RC4 encryption/decryption is performed using a "raw" implementation of the RC4 algorithm (thanks ChatGPT).
