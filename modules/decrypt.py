@@ -1,5 +1,7 @@
 import os
 import colorama
+import sys
+import argparse
 
 class RC4:
     def __init__(self, key):
@@ -28,22 +30,18 @@ class RC4:
             output[k] = data[k] ^ key_stream
         return output
 
-def encrypt_file(file, output_file_path, key):
+if __name__=="__main__":
 
-    # Read the input file into a byte array
-    file_bytes = file.read()
-    
-    # Create an instance of the RC4 class
-    rc4 = RC4(key)
+    if sys.platform == 'win32':
+        colorama.init()
 
-    # Encrypt the file bytes
-    encrypted_bytes = rc4.encrypt_decrypt(file_bytes)
-    
-    # Write the encrypted bytes to a new file
-    with open(output_file_path, 'wb') as file:
-        file.write(encrypted_bytes)
+    parser = argparse.ArgumentParser(description='PositiveIntent .NET Loader')
+    parser.add_argument('--file', type=argparse.FileType('rb'),
+                        required=True, help='Path to your encrypted output file.')
+    parser.add_argument('--key', type=str,
+                        required=True, help='Your decryption key (check build output).')
+    args = parser.parse_args()
 
-def run(file, key):
-    
-    # Encrypt the executable file
-    encrypt_file(file, os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../temp/PositiveIntent/Resources/File1.exe")), key)
+    file_bytes = args.file.read()
+    rc4 = RC4(args.key.encode('utf-8'))
+    print(rc4.encrypt_decrypt(file_bytes).decode('utf-8'))

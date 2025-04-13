@@ -4,14 +4,51 @@ import shutil
 import random
 import string
 import colorama
+import shlex
 import xml.etree.ElementTree as ET
 
-# Function to reverse a string
+def update_encryption_key(content):
+    key = ''.join(random.choices(string.ascii_letters, k=16))
+    content = re.sub(re.escape('public static byte[] key = Encoding.UTF8.GetBytes("DepthSecurity");'), f'public static byte[] key = Encoding.UTF8.GetBytes("{key}");', content)
+    return content, key
+
+def update_writetofile(content):
+    content = re.sub(re.escape('Fork(string.Join(" ", args));'), 'Fork(string.Join(" ", args), true);', content)
+    return content
+
+def update_arguments(args, obfuscation_map, content):
+
+    # Split args into a list of strings
+    arg_parts = shlex.split(args)
+    
+    # Format each argument as a reversed string in the C# string array
+    formatted_args = ", ".join(f'StringHelper.Reverse(@"{arg[::-1]}")' for arg in arg_parts)
+
+    # Update argument count
+    content = re.sub(re.escape('else if (args.Length != 0)'), 'else if (args.Length == 0)', content)
+
+    # Update the parameters declaration
+    content = re.sub(
+        re.escape('object[] parameters = new[] { args };'), 
+        rf'string[] parameters = new string[] {{ {formatted_args} }};', 
+        content
+    )
+    
+    # Update the method invocation
+    content = re.sub(
+        re.escape('object execute = method.Invoke(null, parameters);'), 
+        'object execute = method.Invoke(null, new object[] { parameters });', 
+        content
+    )
+    
+    return content
+
+# Method to reverse a string
 def obfuscate_string(original_string, string_map):
     string_map[original_string] = f'StringHelper.Reverse({original_string[::-1]})'
     return string_map[original_string]
 
-# Function to obfuscate names
+# Method to obfuscate names
 def obfuscate_name(original_method, obfuscation_map):
     if original_method not in obfuscation_map:
         obfuscated = ''.join(random.choices(string.ascii_letters, k=8))
@@ -23,7 +60,7 @@ def update_references(content, obfuscation_map):
         content = re.sub(rf'\b{original_name}\b', obfuscated_name, content)
     return content
 
-# update solution namespace to match randomized assembly name
+# Update solution namespace to match randomized assembly name
 def randomize_namespace(csproj_filepath, new_name):
 
     # Parse the .csproj XML file
@@ -86,15 +123,15 @@ def randomize_assembly_name(csproj_filepath, new_name):
 
     return new_name
 
-# Function to obfuscate method names
+# Method to obfuscate method names
 def obfuscate_methods(content, obfuscation_map):
-    method_pattern = re.compile(r'(public|private|protected|internal)\s(static|delegate)\s(.*NTSTATUS|void|int|double|IntPtr|string|bool|uint|T)\s(\w*)')
+    method_pattern = re.compile(r'(public|private|protected|internal)\s(?:static\s+|delegate\s)?(.*NTSTATUS|void|byte\[\]|int|double|IntPtr|string|bool|uint|T)\s(\w+)\(')
     for match in method_pattern.finditer(content):
-        original_method = match.group(4)
+        original_method = match.group(3)
         if original_method != 'Main' and original_method != 'Reverse':
             obfuscate_name(original_method, obfuscation_map)
 
-# Function to obfuscate class names
+# Method to obfuscate class names
 def obfuscate_classes(content, obfuscation_map):
     class_pattern = re.compile(r'(class)\s(\w*)')
     for match in class_pattern.finditer(content):
@@ -102,7 +139,7 @@ def obfuscate_classes(content, obfuscation_map):
         if original_class != 'StringHelper' and original_class != 'Generic' and original_class != "for":
             obfuscate_name(original_class, obfuscation_map)
 
-# Function to obfuscate namespaces
+# Method to obfuscate namespaces
 def obfuscate_namespaces(content, obfuscation_map):
     namespace_pattern = re.compile(r'(namespace)\s(\w*)\s|(namespace)\s(\w*)\.(\w*)\s')
     for match in namespace_pattern.finditer(content):
@@ -114,15 +151,15 @@ def obfuscate_namespaces(content, obfuscation_map):
             original_namespace = match.group(5)
             obfuscate_name(original_namespace, obfuscation_map)
 
-# Function to obfuscate variables
+# Method to obfuscate variables
 def obfuscate_variables(content, obfuscation_map):
-    variable_pattern = re.compile(r'(var|object\[\]|uint|bool|string|int|byte\[\]|IntPtr)\s(\w*)\s=')
+    variable_pattern = re.compile(r'(var|object\[\]|object|uint|bool|string|int|byte\[\]|IntPtr)\s(\w*)\s=')
     for match in variable_pattern.finditer(content):
         original_variable = match.group(2)
         if original_variable != 'System' and original_variable != "Size":
             obfuscate_name(original_variable, obfuscation_map)
 
-# Function to obfuscate non-const strings
+# Method to obfuscate non-const strings
 def obfuscate_strings(content, obfuscation_map, string_map):
     # First, find all const strings to ignore them
     const_string_pattern = re.compile(r'const\sstring\s\w+\s=\s(".*")')
@@ -139,7 +176,7 @@ def obfuscate_strings(content, obfuscation_map, string_map):
         else:
             obfuscate_string(original_string, string_map)
 
-# Function to process a C# file
+# Method to process a C# file
 def process_file(file_path, obfuscation_map, string_map):
     with open(file_path, 'r', encoding='utf-8') as file:
         content = file.read()
@@ -149,7 +186,7 @@ def process_file(file_path, obfuscation_map, string_map):
     obfuscate_classes(content, obfuscation_map)
     obfuscate_strings(content, obfuscation_map, string_map)
 
-def run(hostname):
+def run(hostname, args, writetofile):
     # Input and output directories
     input_dir = os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../"))
     output_dir =  os.path.normpath(os.path.join(os.path.dirname(os.path.abspath(__file__)), "../temp"))
@@ -186,10 +223,16 @@ def run(hostname):
             if file_name.endswith('.cs'):
                 with open(file_path, 'r+', encoding='utf-8') as file:
                     content = file.read()
+                    if(writetofile):
+                        content = update_writetofile(content)
+                    if(args):
+                        content = update_arguments(args, obfuscation_map, content)
+                    if("RC4" in file_name):
+                        content, key = update_encryption_key(content)
                     content = update_references(content, obfuscation_map)
                     content = update_strings(content, string_map)
                     content = update_hostname(content, hostname)
                     file.seek(0)
                     file.write(content)
                     file.truncate()
-    return assembly_name
+    return assembly_name, key
