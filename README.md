@@ -51,7 +51,7 @@ python build.py --file /tmp/Rubeus.exe --hostname TEST --domain www.zoom.com
 | SentinelOne | Rubeus | Undetected (03/23/2025) |
 | SentinelOne | Seeker | Undetected (03/18/2025) |
 | SentinelOne | Internal Monologue | Undetected (10/11/2024) |
-| CrowdStrike | Rubeus | Undetected (10/11/2024) |
+| CrowdStrike | Rubeus | Undetected (05/07/2025) |
 | CrowdStrike | Seeker | Undetected (10/11/2024) |
 | CrowdStrike | Internal Monologue | Detected (Behavioral) |
 | Windows Defender | Rubeus | Undetected (03/23/2025) |
