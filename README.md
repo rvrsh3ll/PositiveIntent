@@ -56,10 +56,11 @@ python build.py --file ~/Rubeus.exe --hostname TEST --domain www.slack.com --arg
 | CrowdStrike | Rubeus | Undetected (05/07/2025) |
 | CrowdStrike | Seeker | Undetected (10/11/2024) |
 | CrowdStrike | Internal Monologue | Detected (Behavioral) |
-| Windows Defender | Rubeus | Undetected (03/23/2025) |
+| Windows Defender | Rubeus | Undetected (06/03/2025) |
 | Windows Defender | Seatbelt | Undetected (10/10/2024) |
 | ESET | Rubeus | Undetected (10/18/2024) |
 | Carbon Black | Rubeus | Detected (Behavioral) |
+| Trend Micro | Rubeus | Undetected (06/09/2025) |
 
 ## Roadmap
 
