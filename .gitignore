@@ -1,0 +1,17 @@
+﻿################################################################################
+# This .gitignore file was automatically created by Microsoft(R) Visual Studio.
+################################################################################
+
+/.vs/ProjectEvaluation/positiveintent.metadata.v9.bin
+/.vs/ProjectEvaluation/positiveintent.projects.v9.bin
+/.vs/ProjectEvaluation/positiveintent.strings.v9.bin
+/.vs/VSWorkspaceState.json
+/.vs/PositiveIntent/DesignTimeBuild/.dtbcache.v2
+/.vs/PositiveIntent/FileContentIndex/50b50984-7a53-4738-b366-8efbc1b70364.vsidx
+/.vs/PositiveIntent/v17/.futdcache.v2
+/.vs/PositiveIntent/v17/.suo
+/.vs/PositiveIntent/v17/.wsuo
+/.vs/PositiveIntent/v17/DocumentLayout.backup.json
+/.vs/PositiveIntent/v17/DocumentLayout.json
+/.vs/PositiveIntent/v17/ResourceExplorer/settings.json
+/PositiveIntent/obj
