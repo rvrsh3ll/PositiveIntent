@@ -87,3 +87,4 @@ $si = New-Object System.Diagnostics.ProcessStartInfo -Property @{ FileName="powe
 [Building, Modifying, and Packing with Azure DevOps](https://blog.xpnsec.com/building-modifying-packing-devops/)  
 [DeepSeek](https://deepseek.com/) (THE GOAT)  
 [ChatGPT](https://chatgpt.com/)  
+[Claude](https://claude.ai/)
