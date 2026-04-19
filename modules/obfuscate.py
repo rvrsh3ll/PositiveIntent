@@ -13,7 +13,7 @@ def update_encryption_key(content):
     return content, key
 
 def update_writetofile(content):
-    content = re.sub(re.escape('Fork(string.Join(" ", args));'), 'Fork(string.Join(" ", args), true);', content)
+    content = re.sub(re.escape('bool shouldWriteToFile = false;'), 'bool shouldWriteToFile = true;', content)
     return content
 
 def update_arguments(args, obfuscation_map, content):
@@ -23,9 +23,6 @@ def update_arguments(args, obfuscation_map, content):
     
     # Format each argument as a reversed string in the C# string array
     formatted_args = ", ".join(f'StringHelper.Reverse(@"{arg[::-1]}")' for arg in arg_parts)
-
-    # Update argument count
-    content = re.sub(re.escape('else if (args.Length != 0)'), 'else if (args.Length == 0)', content)
 
     # Update the parameters declaration
     content = re.sub(
@@ -57,7 +54,8 @@ def obfuscate_name(original_method, obfuscation_map):
 
 def update_references(content, obfuscation_map):
     for original_name, obfuscated_name in obfuscation_map.items():
-        content = re.sub(rf'\b{original_name}\b', obfuscated_name, content)
+	# skip matches inside double-quoted or single-quoted strings
+        content = re.sub(rf"(?<!['\"])\b{original_name}\b(?!['\"])", obfuscated_name, content)
     return content
 
 # Update solution namespace to match randomized assembly name
@@ -178,7 +176,7 @@ def obfuscate_strings(content, obfuscation_map, string_map):
     string_pattern = re.compile(r'(".*?")')
     for match in string_pattern.finditer(content):
         original_string = match.group(1)
-        if "ntdll.dll" in original_string or original_string in const_strings or original_string in hostname_strings or original_string in obfuscation_map.values():
+        if "AddVectoredExceptionHandler" in original_string or "kernel32.dll" in original_string or "ntdll.dll" in original_string or original_string in const_strings or original_string in hostname_strings or original_string in obfuscation_map.values():
             string_map[original_string] = original_string
         else:
             obfuscate_string(original_string, string_map)

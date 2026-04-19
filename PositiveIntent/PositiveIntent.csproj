@@ -4,7 +4,7 @@
     <OutputType>Exe</OutputType>
     <TargetFramework>net451</TargetFramework>
     <LangVersion>7.3</LangVersion>
-    <PlatformTarget>AnyCPU</PlatformTarget>
+    <PlatformTarget>x64</PlatformTarget>
     <AllowUnsafeBlocks>True</AllowUnsafeBlocks>
   </PropertyGroup>
 

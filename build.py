@@ -81,7 +81,7 @@ if __name__=="__main__":
 
     if sys.platform == 'win32':
         colorama.init()
-    num_chunks = random.randint(10, 20)
+    num_chunks = random.randint(10, 30)
     
     # parse arguments
     parser = argparse.ArgumentParser(description='PositiveIntent .NET Loader')
