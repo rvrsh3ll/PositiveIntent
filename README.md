@@ -1,15 +1,11 @@
 # PositiveIntent
-> [!WARNING]  
-> Beta release. Please create an issue with as much detail as possible if you run into any bugs.
 
-## Installation (Kali/Debian-Based)
+## Installation
 
 ```
-sudo apt update && apt install -y osslsigncode dirmngr ca-certificates gnupg
-sudo echo "deb [trusted=yes] https://download.mono-project.com/repo/debian stable-buster main" | tee /etc/apt/sources.list.d/mono-official-stable.list
-sudo apt update && apt install -y mono-complete
-cd PositiveIntent
-pip install -r requirements.txt
+docker pull mono:latest
+apt (or brew) install osslsigncode
+pipx install git+https://github.com/Mister-Joe/PositiveIntent.git
 ```
 
 ## Example Usage
