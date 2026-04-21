@@ -90,7 +90,7 @@ def sign_executable(tmp_dir, p12_path, assembly_name):
             "-out", signed_loader_path
         ]
     
-    subprocess.run(cmd, check=True, stdout = subprocess.DEVNULL)
+    subprocess.run(cmd, check=True, stdout = subprocess.DEVNULL, stderr = subprocess.DEVNULL)
 
 def run(tmp_dir, domain, assembly_name):
 
