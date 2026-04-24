@@ -52,7 +52,10 @@ def update_arguments(args, content):
     
     return content
 
-def randomize_assembly_name(csproj_filepath, new_name):
+def randomize_loader_name(tmp_dir):
+
+    csproj_filepath = os.path.normpath(os.path.join(tmp_dir, "PositiveIntent/PositiveIntent.csproj"))
+    loader_name = ''.join(random.choices(string.ascii_letters, k=random.randint(8, 16)))
     
     # Parse the .csproj XML file
     tree = ET.parse(csproj_filepath)
@@ -63,20 +66,19 @@ def randomize_assembly_name(csproj_filepath, new_name):
         assembly_name_element = ET.SubElement(property_group, 'AssemblyName')
 
     # Update the AssemblyName to the new random name
-    assembly_name_element.text = new_name
+    assembly_name_element.text = loader_name
     
     # Write changes back to the .csproj file
     tree.write(csproj_filepath, encoding="utf-8", xml_declaration=True)
 
-    return new_name
-        
+    return loader_name
+
 def run(tmp_dir, hostname, num_chunks, args, writetofile):
     # Copy entire project to temp directory
     input_dir = os.path.normpath(os.path.join(CURRENT_SCRIPT_PATH, "../"))
     shutil.copytree(input_dir, tmp_dir, dirs_exist_ok=True)
 
-    csproj_filepath = os.path.normpath(os.path.join(tmp_dir, 'PositiveIntent/PositiveIntent.csproj'))
-    assembly_name = randomize_assembly_name(csproj_filepath, ''.join(random.choices(string.ascii_letters, k=8)))
+    loader_name = randomize_loader_name(tmp_dir)
     
     # Loop over source files and update user-supplied hostname/args/writetofile options as well as resource file references
     for root, dirs, files in os.walk(tmp_dir, topdown=True):
@@ -97,4 +99,4 @@ def run(tmp_dir, hostname, num_chunks, args, writetofile):
                     file.seek(0)
                     file.write(content)
                     file.truncate()
-    return assembly_name, key
+    return loader_name, key

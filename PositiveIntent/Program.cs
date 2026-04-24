@@ -35,8 +35,7 @@ namespace PositiveIntent
 
                     BreakpointHelper.SetupHandler();
 
-                    // Old flow: DivideByZeroException from managed code -> caught by VEH -> set HWBPs -> return to managed handler -> load assembly -> HWBPs fire -> repeat
-                    // New flow: DivideByZeroException from managed code -> caught by VEH -> resolved in VEH -> set HWBPs -> load assembly -> HWBPs fire -> repeat
+                    // DivideByZeroException from managed code -> caught by VEH -> set HWBPs -> return to managed handler -> load assembly -> HWBPs fire -> repeat
                     try
                     {
                         int x = 1;
@@ -45,11 +44,8 @@ namespace PositiveIntent
                     }
                     catch (DivideByZeroException)
                     {
-                        //AssemblyHelper.LoadAssembly(args);
-                        Environment.Exit(-1);
+                        AssemblyHelper.LoadAssembly(args);
                     }
-
-                    AssemblyHelper.LoadAssembly(args);
 
                     if (shouldWriteToFile)
                     {
@@ -61,10 +57,11 @@ namespace PositiveIntent
                     }
                 }
             }
-            // Need to improve exception handling both globally and locally - handle some exceptions locally if recoverable
+            // TODO: improve exception handling both globally and locally - handle some exceptions locally if recoverable
             catch (Exception ex)
             {
                 Console.WriteLine(ex.ToString());
+                Environment.Exit(1);
             }
         }
     }

