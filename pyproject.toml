@@ -10,6 +10,7 @@ dependencies = [
     "cryptography",
     "colorama",
     "requests",
+    "wonderwords"
 ]
 
 [project.scripts]
@@ -20,7 +21,7 @@ include-package-data = true
 
 [tool.setuptools.packages.find]
 where = ["."]
-include = ["NetFuscator*", "PositiveIntent*", "modules*", "windows_dependencies*"]
+include = ["NetFuscator*", "PositiveIntent*", "modules*", "Resources*"]
 
 [tool.setuptools.package-data]
 "*" = ["**/*"]

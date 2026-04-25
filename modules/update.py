@@ -6,6 +6,7 @@ import string
 import colorama
 import shlex
 import xml.etree.ElementTree as ET
+import wonderwords
 
 CURRENT_SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -55,7 +56,8 @@ def update_arguments(args, content):
 def randomize_loader_name(tmp_dir):
 
     csproj_filepath = os.path.normpath(os.path.join(tmp_dir, "PositiveIntent/PositiveIntent.csproj"))
-    loader_name = ''.join(random.choices(string.ascii_letters, k=random.randint(8, 16)))
+    r = wonderwords.RandomWord()
+    loader_name = f"{r.word()}_{r.word()}"
     
     # Parse the .csproj XML file
     tree = ET.parse(csproj_filepath)

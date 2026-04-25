@@ -10,6 +10,7 @@ import subprocess
 import os
 import colorama
 import xml.etree.ElementTree as ET
+import wonderwords
 
 # custom imports
 import update
@@ -22,8 +23,9 @@ def main():
     if sys.platform == 'win32':
         colorama.init()
     
-    num_chunks = random.randint(8, 20)
-    input_assembly_name = ''.join(random.choices(string.ascii_letters, k=random.randint(8, 16)))
+    num_chunks = random.randint(6,20)
+    r = wonderwords.RandomWord()
+    input_assembly_name = f"{r.word()}_{r.word()}"
     
     # parse arguments
     parser = argparse.ArgumentParser(description='PositiveIntent .NET Loader')
