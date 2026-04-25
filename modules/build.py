@@ -11,10 +11,10 @@ import os
 import colorama
 import xml.etree.ElementTree as ET
 
+# custom imports
 import update
 import rc4
 import entropy
-import sign
 
 CURRENT_SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 
@@ -22,7 +22,7 @@ def main():
     if sys.platform == 'win32':
         colorama.init()
     
-    num_chunks = 1
+    num_chunks = random.randint(8, 20)
     input_assembly_name = ''.join(random.choices(string.ascii_letters, k=random.randint(8, 16)))
     
     # parse arguments
@@ -31,12 +31,10 @@ def main():
                         required=True, help='Path to your .NET assembly (e.g. Seeker.exe).')
     parser.add_argument('--hostname', type=str, required=True,
                         help='Restrict execution of loader to hostname.')
-    parser.add_argument('--domain', type=str, required=True,
-                        help='Domain to copy certificate from. Used to generate a self-signed certificate and digitally sign the loader.')
     parser.add_argument('--args', type=str, required=False,
                         help='Hardcoded arguments to be passed to your assembly. Useful to avoid passing signatured arguments on the command line.')
     parser.add_argument('--writetofile', action='store_true', required=False,
-                        help='Redirect output of assembly to encrypted file (C:/Windows/Temp/log.txt). Useful to avoid outputting signatured text to console (e.g. tool logos).')
+                        help='Redirect output of assembly to encrypted file (log.txt). Useful to avoid outputting signatured text to console (e.g. tool logos).')
     args = parser.parse_args()
    
     with tempfile.TemporaryDirectory() as tmp_dir:
