@@ -55,6 +55,15 @@ namespace PositiveIntent
                         bytes = rc4.EncryptDecrypt(bytes);
                         File.WriteAllBytes($"{Directory.GetCurrentDirectory()}\\log.txt", bytes);
                     }
+
+                    try
+                    {
+                        BreakpointHelper.Teardown();
+                    }
+                    catch (DivideByZeroException)
+                    {
+                        Environment.Exit(2);
+                    }
                 }
             }
             // TODO: improve exception handling both globally and locally - handle some exceptions locally if recoverable

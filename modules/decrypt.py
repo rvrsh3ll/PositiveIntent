@@ -30,8 +30,7 @@ class RC4:
             output[k] = data[k] ^ key_stream
         return output
 
-if __name__=="__main__":
-
+def main():
     if sys.platform == 'win32':
         colorama.init()
 
@@ -45,3 +44,6 @@ if __name__=="__main__":
     file_bytes = args.file.read()
     rc4 = RC4(args.key.encode('utf-8'))
     print(rc4.encrypt_decrypt(file_bytes).decode('utf-8'))
+
+if __name__=="__main__":
+    main()

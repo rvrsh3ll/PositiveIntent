@@ -15,6 +15,7 @@ dependencies = [
 
 [project.scripts]
 pi_build = "modules.build:main"
+pi_decrypt = "modules.decrypt:main"
 
 [tool.setuptools]
 include-package-data = true

