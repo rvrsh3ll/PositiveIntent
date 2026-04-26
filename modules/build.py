@@ -12,14 +12,20 @@ import colorama
 import xml.etree.ElementTree as ET
 import wonderwords
 
-# custom imports
-import update
-import rc4
-import entropy
-
 CURRENT_SCRIPT_PATH = os.path.dirname(os.path.abspath(__file__))
 
 def main():
+
+    # custom imports
+    try:
+	from modules import update
+	from modules import rc4
+	from modules import entropy
+    except ImportError:
+	import update
+	import rc4
+	import entropy
+
     if sys.platform == 'win32':
         colorama.init()
     
